@@ -43,6 +43,7 @@ Once a connection is established then the calling code is handed a peer object. 
 - Determine the MTU. This will be done by sending various sized packets with the no-split flag to see which ones make it through.
 - Reconcile changes to the IP address. If an IP does change, hopefully it happens on only one end and connectivity can immediately be re-established. IF this is not possible then the new IP will be found by checking the reliable DHT nodes.
 - Maintain attributes that can be set by the calling code. These will be text strings. Setting an attribute on the local peer will cause it to be visible to other peers.
+- Track all of the known IP/port addresses for this client. Determine which one is best by trying them all and prioritize the one that is fastest (lowest ping). If connectivity is lost when switch to another one.
 
 ## Connection class
 
@@ -55,10 +56,11 @@ The calling code can ask a peer object to provide a connection object. The conne
 In addition, connections support multiple rate limiting features:
 - A loss-packet approach guarantees that the connection will move data as fast as possible but at the cost of other traffic
 - A ping based approach is much slower but allows data to be transferred so that it does not interfere with other traffic
+- These can be set at both the peer and connection levels.
+- Additional prioritization will also be managed by the peer class.
 
 Internally the connections are stored in an array that is managed by the peer object.
 - Each connection is actually 2 connections, the even bit holds the data of the calling code while the odd bit is used as a corresponding control channel.
 - Connection 0/1 is a guaranteed/non-ordered channel created by default that is used by the peer class to manage itself
 - The calling code may thus access up to 126 connections to another peer
 
-- 
