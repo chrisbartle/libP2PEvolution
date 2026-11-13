@@ -42,4 +42,23 @@ Once a connection is established then the calling code is handed a peer object. 
 - Managing multiple connection objects. The 0 connection is responsible for peer communications and not used by the calling code.
 - Determine the MTU. This will be done by sending various sized packets with the no-split flag to see which ones make it through.
 - Reconcile changes to the IP address. If an IP does change, hopefully it happens on only one end and connectivity can immediately be re-established. IF this is not possible then the new IP will be found by checking the reliable DHT nodes.
+- Maintain attributes that can be set by the calling code. These will be text strings. Setting an attribute on the local peer will cause it to be visible to other peers.
 
+## Connection class
+
+The calling code can ask a peer object to provide a connection object. The connection object represents a single connection. The following connections will be supported:
+- non-guaranteed/non-ordered - This is exactly like a typical UDP connection, packets can be sent but are not guaranteed to arrive or to arrive in any particular order
+- guaranteed/non-ordered - This is a UDP style connection but all packets are guaranteed to arrive at their destination
+- guaranteed/ordered - This is a TCP style socket that guarantees data arrives correctly
+- data transfer - Internally this uses a TCP style socket but is meant for moving binary data. It supports both in-memory objects and files.
+
+In addition, connections support multiple rate limiting features:
+- A loss-packet approach guarantees that the connection will move data as fast as possible but at the cost of other traffic
+- A ping based approach is much slower but allows data to be transferred so that it does not interfere with other traffic
+
+Internally the connections are stored in an array that is managed by the peer object.
+- Each connection is actually 2 connections, the even bit holds the data of the calling code while the odd bit is used as a corresponding control channel.
+- Connection 0/1 is a guaranteed/non-ordered channel created by default that is used by the peer class to manage itself
+- The calling code may thus access up to 126 connections to another peer
+
+- 
